@@ -9,6 +9,8 @@ typedef long long lint;
 char buffer[MAXB];
 lint mask[BL];
 
+int nonz[100000], tail;
+
 struct equat
 {
     lint *bits; // set of BL bits
@@ -40,18 +42,19 @@ struct equat
     inline void xo(const equat &other, int blen)
     {
         v ^= other.v;
-        for (int i = 0; i < blen; i++)
+        for (int i = 0; i < tail; i++)
         {
-            if (other.bits[i]) // only ^ when non-zero
+            int j = nonz[i];
+            if (other.bits[j]) // only ^ when non-zero
             {
-                if (bits[i]) // when non-zero, ^
+                if (bits[j]) // when non-zero, ^
                 {
-                    bits[i] ^= other.bits[i];
-                    if (!bits[i]) c--; // if zero, count-1
+                    bits[j] ^= other.bits[j];
+                    if (!bits[j]) c--; // if zero, count-1
                 }
                 else // zero, just assign the non-zero from other
                 {
-                    bits[i] = other.bits[i];
+                    bits[j] = other.bits[j];
                     c++; // count+1
                 }
             }
@@ -110,6 +113,16 @@ struct equat
 
 equat *eqs;
 
+void calcnz(int k, int blen)
+{
+    tail = 0;
+    for (int i = 0; i < blen; i++)
+    {
+        if (eqs[k].bits[i])
+            nonz[tail++] = i;
+    }
+}
+
 int gauss(int len, int blen)
 { 
     // delta
@@ -145,6 +158,7 @@ int gauss(int len, int blen)
         {
             continue;
         }
+        calcnz(k, blen);
         for (int i = 0; i < len; i++)
         {
             if (sel[i] == -1 && eqs[i].getbit(len-k-1) != '0' && i!=k)
@@ -156,6 +170,7 @@ int gauss(int len, int blen)
     // elim
     for (int k = len-1; k > -1; k--)
     {
+        calcnz(k, blen);
         if (eqs[k].getbit(len-k-1) != 0)
         {
             for (int i = k-1; i > -1; i--)
@@ -175,7 +190,11 @@ int gauss(int len, int blen)
     temp.init(0, len);
     for (int i = 0; i < len; i++)
     {
-        if (eqs[i].v) temp.xo(eqs[i], blen);
+        if (eqs[i].v)
+        {
+            calcnz(i, blen);
+            temp.xo(eqs[i], blen);
+        }
     }
     for (int i = len - 1; i > -1; i--)
     {
