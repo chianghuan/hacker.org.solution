@@ -2,6 +2,7 @@ crossflip.exe: crossflip.cpp
 	g++ -o crossflip.exe crossflip.cpp -O3
 
 .PHONY : tags
+tags:
 	rm -f tags
 	ctags -R .
 
