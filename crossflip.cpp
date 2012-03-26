@@ -42,21 +42,17 @@ struct equat
     inline void xo(const equat &other, int blen)
     {
         v ^= other.v;
-        for (int i = 0; i < tail; i++)
+        for (int *j = nonz, *e = nonz + tail; j < e; j++)
         {
-            int j = nonz[i];
-            if (other.bits[j]) // only ^ when non-zero
+            if (bits[*j]) // when non-zero, ^
             {
-                if (bits[j]) // when non-zero, ^
-                {
-                    bits[j] ^= other.bits[j];
-                    if (!bits[j]) c--; // if zero, count-1
-                }
-                else // zero, just assign the non-zero from other
-                {
-                    bits[j] = other.bits[j];
-                    c++; // count+1
-                }
+                bits[*j] ^= other.bits[*j];
+                if (!bits[*j]) c--; // if zero, count-1
+            }
+            else // zero, just assign the non-zero from other
+            {
+                bits[*j] = other.bits[*j];
+                c++; // count+1
             }
         }
     }
